@@ -9,12 +9,17 @@ const slidePrev = document.querySelector('.slide-prev');
 
 let randomNum;
 
+const city = document.querySelector('.city');
+const weatherIcon = document.querySelector('.weather-icon');
+const temperature = document.querySelector('.temperature');
+const weatherDescription = document.querySelector('.weather-description');
+
 function showTime() {
 	const date = new Date();
 	const currentTime = date.toLocaleTimeString();
 	document.querySelector(".time").innerHTML = currentTime;
-	
-	const options = {day: 'numeric', weekday: 'long', month: 'long'};
+
+	const options = { day: 'numeric', weekday: 'long', month: 'long' };
 	const currentDate = date.toLocaleDateString('en-US', options);
 	document.querySelector('.date').innerHTML = currentDate;
 
@@ -49,20 +54,20 @@ function setLocalStorage() {
 window.addEventListener('beforeunload', setLocalStorage);
 
 function getLocalStorage() {
-	if(localStorage.getItem('name')) {
+	if (localStorage.getItem('name')) {
 		input.value = localStorage.getItem('name');
 	}
 }
 window.addEventListener('load', getLocalStorage);
 
-function getNumberNow(min, max){
+function getNumberNow(min, max) {
 	min = 1;
 	max = 20;
 	randomNum = Math.floor(Math.random() * (max - min + 1) + min);
 	return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function setBg(){
+function setBg() {
 	const timeOfDay = getTimeOfDay();
 	const bgNum = getNumberNow().toString().padStart(2, "0");
 
@@ -71,12 +76,12 @@ function setBg(){
 setBg();
 
 function getSlideNext() {
-	if (randomNum === 20){
+	if (randomNum === 20) {
 		randomNum = 01;
 	} else {
 		randomNum = randomNum + 1;
 	}
-	
+
 	setBg();
 }
 slideNext.addEventListener('click', getSlideNext);
@@ -90,3 +95,24 @@ function getSlidePrev() {
 	setBg();
 }
 slidePrev.addEventListener('click', getSlidePrev);
+
+async function getWeather() {
+	const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.textContent}&lang=ru&appid=08f2a575dda978b9c539199e54df03b0&units=metric`;
+	const res = await fetch(url);
+	const data = await res.json();
+
+	weatherIcon.className = 'weather-icon owf';
+	weatherIcon.classList.add(`owf-${data.weather[0].id}`);
+	temperature.textContent = `${data.main.temp.toFixed(0)}°C`;
+	weatherDescription.textContent = data.weather[0].description;
+}
+
+function setCity(event) {
+	if (event.code === 'Enter') {
+		getWeather();
+		city.blur();
+	}
+}
+
+document.addEventListener('DOMContentLoaded', getWeather);
+city.addEventListener('keypress', setCity);
